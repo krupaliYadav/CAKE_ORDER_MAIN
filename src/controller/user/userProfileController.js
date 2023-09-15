@@ -3,7 +3,7 @@ const fs = require("fs");
 const { v4: uuidv4 } = require('uuid');
 const User = require("../../models/userModel")
 const Address = require("../../models/address")
-const { HTTP_STATUS_CODE, DEFAULT_PROFILE_IMG } = require("../../helper/constants.helper")
+const { HTTP_STATUS_CODE, DEFAULT_PROFILE_IMG, PATH_END_POINT } = require("../../helper/constants.helper")
 const { BadRequestException } = require("../../common/exceptions/index");
 const path = require("path");
 const { mongoose } = require("mongoose");
@@ -17,7 +17,7 @@ const getProfile = async (req, res) => {
         throw new BadRequestException("User details not found ")
     }
     if (data?.image) {
-        data.image = `${process.env.PROFILE_IMAGE_URL}${data.image}`
+        data.image = `${PATH_END_POINT.userProfileImage}${data.image}`
     }
 
     return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "User details load successfully", data })
@@ -95,6 +95,7 @@ const updateProfile = async (req, res) => {
         }
     })
 }
+
 // add new address
 const addAddress = async (req, res) => {
     const userId = req.user

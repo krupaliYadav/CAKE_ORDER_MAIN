@@ -4,7 +4,7 @@ const mongoose = require("mongoose")
 const path = require("path")
 const formidable = require("formidable")
 const fs = require("fs")
-const { HTTP_STATUS_CODE, DEFAULT_PROFILE_IMG } = require("../../helper/constants.helper")
+const { HTTP_STATUS_CODE, DEFAULT_PROFILE_IMG, PATH_END_POINT } = require("../../helper/constants.helper")
 const { v4: uuidv4 } = require('uuid');
 const { addUserValidation } = require("../../common/validation")
 const { BadRequestException, ConflictRequestException, NotFoundRequestException } = require("../../common/exceptions/index")
@@ -74,9 +74,22 @@ const getUserList = async (req, res) => {
     const data = await User.find({ isDeleted: 0 }).select('firstName lastName email phoneNumber image isActive')
 
     data.map((user) => {
-        return user.image = `${process.env.PROFILE_IMAGE_URL}${user.image}`
+        return user.image = `${PATH_END_POINT.userProfileImage}${user.image}`
     })
     return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "User details load successfully", data });
+}
+
+const getSingleUser = async (req, res) => {
+    const { userId } = req.params
+    if (!mongoose.Types.ObjectId.isValid(userId)) throw new BadRequestException("Please enter valid user Id")
+
+    const data = await User.findOne({ _id: userId, isDeleted: 0 }).select('firstName lastName email phoneNumber image isActive')
+    if (!data) {
+        throw new BadRequestException("User details not found")
+    } else {
+        data.image = `${PATH_END_POINT.userProfileImage}${data.image}`
+        return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "User details load successfully", data });
+    }
 }
 
 // update user profile
@@ -91,9 +104,8 @@ const updateUserProfile = async (req, res) => {
             }
             if (!mongoose.Types.ObjectId.isValid(userId)) {
                 return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({ status: HTTP_STATUS_CODE.BAD_REQUEST, success: false, message: "Please enter valid user Id" });
-
             }
-            const user = await User.findOne({ _id: userId })
+            const user = await User.findOne({ _id: userId, isDeleted: 0 })
 
             if (user) {
 
@@ -195,13 +207,14 @@ const userStatus = async (req, res) => {
     if (!user) {
         throw new BadRequestException("User not found")
     }
-    return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "User status upadate successfully" });
+    return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "User status update successfully" });
 
 }
 
 module.exports = {
     addUser,
     getUserList,
+    getSingleUser,
     updateUserProfile,
     deleteUser,
     userStatus

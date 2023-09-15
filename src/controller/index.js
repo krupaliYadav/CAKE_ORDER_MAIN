@@ -6,3 +6,4 @@ module.exports.userProfileController = require("./user/userProfileController");
 module.exports.adminAuthController = require("./admin/adminAuth");
 module.exports.userAController = require("./admin/userAController");
 module.exports.optionsAController = require("./admin/optionsAController");
+module.exports.cakeAController = require("./admin/cakeAController");

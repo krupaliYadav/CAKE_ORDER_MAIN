@@ -14,4 +14,9 @@ const DEFAULT_PROFILE_IMG = {
     image: "userDefaultProfile.png"
 }
 
-module.exports = { HTTP_STATUS_CODE, DEFAULT_PROFILE_IMG }
+const PATH_END_POINT = {
+    userProfileImage: "http://103.177.225.86:4000/public/profile/",
+    categoryImage: "http://103.177.225.86:4000/public/category/"
+}
+
+module.exports = { HTTP_STATUS_CODE, DEFAULT_PROFILE_IMG, PATH_END_POINT }

@@ -94,11 +94,11 @@ const adminLogin = Joi.object().keys({
 })
 
 const addUserValidation = [
-    'firstName',
-    'lastName',
-    'email',
-    "password",
-    'phoneNumber',
+    'firstName', 'lastName', 'email', "password", 'phoneNumber',
+]
+
+const addCakeValidation = [
+    'name', 'price', 'description', 'categoryId', 'variant'
 ]
 module.exports = {
     registration,
@@ -108,5 +108,6 @@ module.exports = {
     changePassword,
     addAddress,
     adminLogin,
-    addUserValidation
+    addUserValidation,
+    addCakeValidation
 }
