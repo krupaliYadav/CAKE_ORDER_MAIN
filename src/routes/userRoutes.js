@@ -18,7 +18,7 @@ routes
 
     // userProfile
     .get("/getUser", isAuthenticatedUser, expressAsyncHandler(userProfileController.getProfile))
-    .put("/updateProfile", isAuthenticatedUser, expressAsyncHandler(userProfileController.updateUserProfile))
+    .put("/updateProfile", isAuthenticatedUser, expressAsyncHandler(userProfileController.updateProfile))
     .post("/addAddress", isAuthenticatedUser, validator.body(addAddress), expressAsyncHandler(userProfileController.addAddress))
     .get("/getAllAddressList", isAuthenticatedUser, expressAsyncHandler(userProfileController.getAllAddressList))
     .put("/updateAddress/:addressId", isAuthenticatedUser, expressAsyncHandler(userProfileController.updateAddress))

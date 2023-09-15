@@ -9,12 +9,12 @@ const { BadRequestException, ConflictRequestException, NotFoundRequestException 
 // user registration
 const register = async (req, res) => {
     let { firstName, lastName, email, password, phoneNumber, lat, long, address, deviceToken, firebaseToken } = req.body
-    const user = await User.findOne({ email: email })
+    const user = await User.findOne({ email: email, isDeleted: 0 })
     if (user) {
         throw new ConflictRequestException("An account already exists with this email address.")
     }
 
-    const isPhoneNumber = await User.findOne({ phoneNumber: phoneNumber })
+    const isPhoneNumber = await User.findOne({ phoneNumber: phoneNumber, isDeleted: 0 })
     if (isPhoneNumber) {
         throw new ConflictRequestException("This phone number already exists! Use a different phone number")
     }
@@ -36,6 +36,11 @@ const register = async (req, res) => {
 // user login
 const login = async (req, res) => {
     let { email, password, deviceToken, firebaseToken } = req.body
+
+    const isActiveUser = await User.findOne({ email: email, isActive: 1 })
+    if (!isActiveUser) {
+        throw new BadRequestException("Access denied")
+    }
     const user = await User.findOne({ email: email })
 
     if (!user || !bcrypt.compareSync(password, user?.password)) {
@@ -65,7 +70,7 @@ const forgotPassword = async (req, res, next) => {
         throw new BadRequestException("Please Enter Valid Email.");
     }
 
-    const user = await User.findOne({ email: email });
+    const user = await User.findOne({ email: email, isActive: 1 });
 
     if (user) {
         var digits = '0123456789';
@@ -103,7 +108,7 @@ const resetPassword = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(userId)) {
         throw new BadRequestException("Please enter valid user Id");
     }
-    const user = await User.findOne({ _id: userId })
+    const user = await User.findOne({ _id: userId, isActive: 1 })
 
     if (user && user.resetPasswordToken !== null) {
         user.password = bcrypt.hashSync(password, 10)
@@ -119,7 +124,7 @@ const resetPassword = async (req, res) => {
 const changePassword = async (req, res) => {
     const userId = req.user
     let { oldPassword, newPassword } = req.body
-    const user = await User.findById(userId)
+    const user = await User.findOne({ _id: userId })
 
     if (user) {
         if (bcrypt.compareSync(oldPassword, user.password)) {

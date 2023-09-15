@@ -11,10 +11,10 @@ const { mongoose } = require("mongoose");
 // get user profile details
 const getProfile = async (req, res) => {
     const userId = req.user
-    const data = await User.findOne({ _id: userId, isDeleted: 0, isActive: 1 }).select('firstName lastName email phoneNumber image isActive')
+    const data = await User.findOne({ _id: userId, isDeleted: 0 }).select('firstName lastName email phoneNumber image isActive')
 
     if (!data) {
-        throw new BadRequestException("User details not found")
+        throw new BadRequestException("User details not found ")
     }
     if (data?.image) {
         data.image = `${process.env.PROFILE_IMAGE_URL}${data.image}`
@@ -24,7 +24,7 @@ const getProfile = async (req, res) => {
 }
 
 // update user profile
-const updateUserProfile = async (req, res) => {
+const updateProfile = async (req, res) => {
     const userId = req.user
     const form = formidable({ multiples: true });
     form.parse(req, async (err, fields, files) => {
@@ -151,7 +151,7 @@ const deleteAddress = async (req, res) => {
 
 module.exports = {
     getProfile,
-    updateUserProfile,
+    updateProfile,
     getAllAddressList,
     addAddress,
     updateAddress,
