@@ -112,7 +112,7 @@ const updateUserProfile = async (req, res) => {
                 // check email is exits or not
                 if (email) {
                     const isEmailExists = await User.findOne({ email: email, isDeleted: 0 });
-                    if (isEmailExists) {
+                    if (isEmailExists?._id.toString() !== userId) {
                         return res.status(HTTP_STATUS_CODE.CONFLICT).json({ status: HTTP_STATUS_CODE.CONFLICT, success: false, message: "Email is already exits" });
                     } else {
                         fields.email = email
@@ -121,7 +121,7 @@ const updateUserProfile = async (req, res) => {
                 // check phone number is exits or not
                 if (phoneNumber) {
                     const isPhoneNumberExists = await User.findOne({ phoneNumber: phoneNumber, isDeleted: 0 });
-                    if (isPhoneNumberExists) {
+                    if (isPhoneNumberExists?._id.toString() !== userId) {
                         return res.status(HTTP_STATUS_CODE.CONFLICT).json({ status: HTTP_STATUS_CODE.CONFLICT, success: false, message: "This phone number already exists! Use a different phone number" });
                     } else {
                         fields.phoneNumber = phoneNumber

@@ -21,6 +21,7 @@ routes
     // category
     .post("/addCategory", isAuthenticatedAdmin, expressAsyncHandler(optionsAController.addCategory))
     .get("/getCategory", isAuthenticatedAdmin, expressAsyncHandler(optionsAController.getAllCategoryList))
+    .get("/getCategoryDetails/:categoryId", isAuthenticatedAdmin, expressAsyncHandler(optionsAController.getCategoryDetails))
     .post("/updateCategory", isAuthenticatedAdmin, expressAsyncHandler(optionsAController.updateCategory))
     .post("/deleteCategory/:categoryId", isAuthenticatedAdmin, expressAsyncHandler(optionsAController.deleteCategory))
     .post("/categoryStatus", isAuthenticatedAdmin, expressAsyncHandler(optionsAController.categoryStatus))
@@ -28,12 +29,15 @@ routes
     // variant
     .post("/addVariant", isAuthenticatedAdmin, expressAsyncHandler(optionsAController.addVariant))
     .get("/getVariant", isAuthenticatedAdmin, expressAsyncHandler(optionsAController.getAllVariantList))
+    .get("/getVariantDetails/:variantId", isAuthenticatedAdmin, expressAsyncHandler(optionsAController.getVariantDetails))
     .post("/updateVariant", isAuthenticatedAdmin, expressAsyncHandler(optionsAController.updateVariant))
     .post("/deleteVariant/:variantId", isAuthenticatedAdmin, expressAsyncHandler(optionsAController.deleteVariant))
     .post("/variantStatus", isAuthenticatedAdmin, expressAsyncHandler(optionsAController.variantStatus))
 
     // cake
     .post("/addCake", isAuthenticatedAdmin, expressAsyncHandler(cakeAController.addCake))
+    .get("/getCakeList", isAuthenticatedAdmin, expressAsyncHandler(cakeAController.getAllCake))
+    .get("/getSingleCake/:cakeId", isAuthenticatedAdmin, expressAsyncHandler(cakeAController.getSingleCake))
 
 
 

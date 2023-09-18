@@ -66,6 +66,19 @@ const getAllCategoryList = async (req, res) => {
     return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "Category list load successfully", data })
 }
 
+// get single category
+const getCategoryDetails = async (req, res) => {
+    const { categoryId } = req.params
+    if (!mongoose.Types.ObjectId.isValid(categoryId)) throw new BadRequestException("Please enter valid category Id")
+
+    const data = await Category.findOne({ _id: categoryId, isDeleted: 0 }).select('name image isActive')
+    if (!data) {
+        throw new BadRequestException("Category details not found")
+    }
+    return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "Category details load successfully", data });
+
+}
+
 // update category
 const updateCategory = async (req, res) => {
     const form = formidable({ multiples: true });
@@ -87,7 +100,7 @@ const updateCategory = async (req, res) => {
                 // check category is exits or not
                 if (name) {
                     const isCategoryExists = await Category.findOne({ name: name, isDeleted: 0 });
-                    if (isCategoryExists) {
+                    if (isCategoryExists?._id.toString() !== categoryId) {
                         return res.status(HTTP_STATUS_CODE.CONFLICT).json({ status: HTTP_STATUS_CODE.CONFLICT, success: false, message: "Category name is already exits" });
                     } else {
                         fields.name = name
@@ -193,6 +206,19 @@ const getAllVariantList = async (req, res) => {
     return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "Variant list load successfully", data })
 }
 
+// get single variant
+const getVariantDetails = async (req, res) => {
+    const { variantId } = req.params
+    if (!mongoose.Types.ObjectId.isValid(variantId)) throw new BadRequestException("Please enter valid variant Id")
+
+    const data = await Variant.findOne({ _id: variantId, isDeleted: 0 }).select('name  isActive')
+    if (!data) {
+        throw new BadRequestException("Variant details not found")
+    }
+    return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "Variant details load successfully", data });
+
+}
+
 //update variant
 const updateVariant = async (req, res) => {
     const { variantId, name } = req.body
@@ -202,7 +228,7 @@ const updateVariant = async (req, res) => {
     if (!name) throw new BadRequestException("Variant name is required")
 
     const isVariantExits = await Variant.findOne({ name: name, isDeleted: 0 })
-    if (isVariantExits) throw new ConflictRequestException("Variant name is already exits")
+    if (isVariantExits?._id.toString() !== variantId) throw new ConflictRequestException("Variant name is already exits")
 
     const variant = await Variant.findByIdAndUpdate({ _id: variantId }, { $set: { name: name } })
     if (!variant) {
@@ -241,12 +267,14 @@ module.exports = {
     // category
     addCategory,
     getAllCategoryList,
+    getCategoryDetails,
     updateCategory,
     deleteCategory,
     categoryStatus,
     // variant
     addVariant,
     getAllVariantList,
+    getVariantDetails,
     updateVariant,
     deleteVariant,
     variantStatus
