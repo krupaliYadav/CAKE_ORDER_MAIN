@@ -58,7 +58,7 @@ const login = async (req, res) => {
 
         }
     }
-    const token = jwt.sign({ id: user?.id }, process.env.JWT_SEC, { expiresIn: process.env.JWT_EXPIRES })
+    const token = jwt.sign({ _id: user?._id }, process.env.JWT_SEC, { expiresIn: process.env.JWT_EXPIRES })
     res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "Login SuccessFully..", data: { userID: user?._id, token } });
 }
 

@@ -86,13 +86,9 @@ const getAllCake = async (req, res) => {
                 from: 'variants',
                 localField: 'variant.variantId',
                 foreignField: "_id",
-                as: 'variant',
-                pipeline: [
-                    { $project: { name: 1, isActive: 1 } }
-                ]
+                as: 'variants'
             }
         },
-        // { $unwind: "$variant" },
         {
             $project: {
                 _id: 1,
@@ -101,10 +97,13 @@ const getAllCake = async (req, res) => {
                 price: 1,
                 description: 1,
                 image: 1,
-                variant: 1,
                 isPopular: 1,
                 isCustom: 1,
-                isActive: 1
+                isActive: 1,
+                'variants._id': 1,
+                'variants.name': 1,
+                'variants.isActive': 1,
+                'variants.price': '$variant.price'
             }
         }
     ])

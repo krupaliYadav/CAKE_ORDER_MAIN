@@ -100,7 +100,7 @@ const updateCategory = async (req, res) => {
                 // check category is exits or not
                 if (name) {
                     const isCategoryExists = await Category.findOne({ name: name, isDeleted: 0 });
-                    if (isCategoryExists?._id.toString() !== categoryId) {
+                    if (isCategoryExists !== null && isCategoryExists?._id.toString() !== categoryId) {
                         return res.status(HTTP_STATUS_CODE.CONFLICT).json({ status: HTTP_STATUS_CODE.CONFLICT, success: false, message: "Category name is already exits" });
                     } else {
                         fields.name = name
@@ -228,7 +228,7 @@ const updateVariant = async (req, res) => {
     if (!name) throw new BadRequestException("Variant name is required")
 
     const isVariantExits = await Variant.findOne({ name: name, isDeleted: 0 })
-    if (isVariantExits?._id.toString() !== variantId) throw new ConflictRequestException("Variant name is already exits")
+    if (isVariantExits !== null && isVariantExits?._id.toString() !== variantId) throw new ConflictRequestException("Variant name is already exits")
 
     const variant = await Variant.findByIdAndUpdate({ _id: variantId }, { $set: { name: name } })
     if (!variant) {

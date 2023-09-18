@@ -16,15 +16,14 @@ exports.isAuthenticatedUser = async (req, res, next) => {
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SEC);
-
-        const user = await User.findById(decoded.id);
+        const user = await User.findById(decoded._id)
         if (!user) {
             return res.status(HTTP_STATUS_CODE.UNAUTHORIZED).json({ status: HTTP_STATUS_CODE.UNAUTHORIZED, success: false, message: "Token is expired or Invalid." });
         }
         if (user.isActive === 0) {
             return res.status(HTTP_STATUS_CODE.UNAUTHORIZED).json({ status: HTTP_STATUS_CODE.UNAUTHORIZED, success: false, message: "Access denied" });
         }
-        req.user = decoded.id
+        req.user = decoded._id
 
         next();
 
