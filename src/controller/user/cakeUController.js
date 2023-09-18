@@ -1,25 +1,33 @@
 const Cake = require("../../models/cake")
-const Category = require("../../models/category")
 const mongoose = require("mongoose")
-const path = require("path")
 const { HTTP_STATUS_CODE, PATH_END_POINT } = require("../../helper/constants.helper")
 const { BadRequestException, ConflictRequestException, NotFoundRequestException } = require("../../common/exceptions/index")
 
 const getCakeList = async (req, res) => {
-    const { cakeId, limit, offset, categoryId } = req.query
-
+    const { cakeId, limit, offset, categoryId, isPopular, isCustom } = req.query
+    console.log(isPopular);
     const limitData = parseInt(limit, 10) || 10;
     const offsetData = parseInt(offset, 10) || 0;
 
-    let query = { isDeleted: 0 }
+    let query = { isDeleted: 0, isActive: 1 }
     if (cakeId) {
+        if (!mongoose.Types.ObjectId.isValid(cakeId)) throw new BadRequestException("cake Id is not valid");
         query = { ...query, _id: new mongoose.Types.ObjectId(cakeId) }
     }
 
     if (categoryId) {
-        query = { categoryId: new mongoose.Types.ObjectId(cakeId) }
+        if (!mongoose.Types.ObjectId.isValid(categoryId)) throw new BadRequestException("category Id is not valid");
+        query = { ...query, categoryId: new mongoose.Types.ObjectId(categoryId) }
     }
-    console.log("......................", query);
+
+    if (isPopular) {
+        query = { ...query, isPopular: 1 }
+    }
+
+    if (isCustom) {
+        query = { ...query, isCustom: 1 }
+    }
+
     let data = await Cake.aggregate([
         { $match: query },
         {

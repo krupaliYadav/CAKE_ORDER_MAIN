@@ -7,6 +7,8 @@ const fs = require("fs")
 const { HTTP_STATUS_CODE, PATH_END_POINT } = require("../../helper/constants.helper")
 const { v4: uuidv4 } = require('uuid');
 const { addCakeValidation } = require("../../common/validation")
+const { BadRequestException } = require("../../common/exceptions/index")
+
 
 // add new user
 const addCake = async (req, res) => {
@@ -72,6 +74,8 @@ const getCake = async (req, res) => {
 
     let query = { isDeleted: 0 }
     if (cakeId) {
+        if (!mongoose.Types.ObjectId.isValid(cakeId)) throw new BadRequestException("cake Id is not valid");
+
         query = { ...query, _id: new mongoose.Types.ObjectId(cakeId) }
     }
     let data = await Cake.aggregate([
