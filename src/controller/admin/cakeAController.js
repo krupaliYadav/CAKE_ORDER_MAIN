@@ -7,7 +7,6 @@ const fs = require("fs")
 const { HTTP_STATUS_CODE, PATH_END_POINT } = require("../../helper/constants.helper")
 const { v4: uuidv4 } = require('uuid');
 const { addCakeValidation } = require("../../common/validation")
-const { BadRequestException, ConflictRequestException, NotFoundRequestException } = require("../../common/exceptions/index")
 
 // add new user
 const addCake = async (req, res) => {
@@ -65,9 +64,17 @@ const addCake = async (req, res) => {
     })
 }
 
-const getAllCake = async (req, res) => {
+const getCake = async (req, res) => {
+    const { cakeId, limit, offset } = req.query
+
+    const limitData = parseInt(limit, 10) || 10;
+    const offsetData = parseInt(offset, 10) || 0;
+
     let query = { isDeleted: 0 }
-    const data = await Cake.aggregate([
+    if (cakeId) {
+        query = { ...query, _id: new mongoose.Types.ObjectId(cakeId) }
+    }
+    let data = await Cake.aggregate([
         { $match: query },
         {
             $lookup: {
@@ -86,7 +93,11 @@ const getAllCake = async (req, res) => {
                 from: 'variants',
                 localField: 'variant.variantId',
                 foreignField: "_id",
-                as: 'variants'
+                as: 'variantData',
+                pipeline: [
+                    { $project: { name: 1, isActive: 1 } },
+
+                ],
             }
         },
         {
@@ -100,38 +111,40 @@ const getAllCake = async (req, res) => {
                 isPopular: 1,
                 isCustom: 1,
                 isActive: 1,
-                'variants._id': 1,
-                'variants.name': 1,
-                'variants.isActive': 1,
-                'variants.price': '$variant.price'
+                variant: 1,
+                variantData: 1
             }
         }
-    ])
-    data.map((item) => {
-        item.image = item.image.map((imageName) => PATH_END_POINT.cakeImage + imageName);
-        return item;
-    });
+    ]);
 
-    return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "Cake details load successfully", data });
+    if (data.length) {
+        data.map((item) => {
+            item.image = item.image.map((imageName) => PATH_END_POINT.cakeImage + imageName);
+            return item;
+        });
 
-}
+        data.forEach((val) => {
+            val.variant.forEach((ele) => {
+                val.variantData.forEach((temp) => {
+                    if (temp._id.toString() === ele.variantId.toString()) {
+                        ele.variantName = temp.name
+                        ele.isActive = temp.isActive
+                        delete ele._id
+                    }
+                })
+            })
+            delete val.variantData
+        })
+    }
 
-const getSingleCake = async (req, res) => {
-    const { cakeId } = req.params
-    const data = await Cake.findOne({ _id: cakeId, isDeleted: 0 }).populate({
-        path: "categoryId",
-        select: 'name isActive',
-    }).populate({
-        path: "variant.variantId",
-        select: 'name',
-    })
-    return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "Cake details load successfully", data });
+    const count = data.length;
+    data = data.slice(offsetData, limitData + offsetData);
 
+    return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "Cake details load successfully", data: { count, data } });
 }
 
 module.exports = {
     addCake,
-    getAllCake,
-    getSingleCake
+    getCake,
 }
 

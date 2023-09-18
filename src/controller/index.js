@@ -1,6 +1,7 @@
 //user
 module.exports.userAuthController = require("./user/auth");
 module.exports.userProfileController = require("./user/userProfileController");
+module.exports.cakeUController = require("./user/cakeUController")
 
 // admin
 module.exports.adminAuthController = require("./admin/adminAuth");

@@ -20,7 +20,7 @@ routes
 
     // category
     .post("/addCategory", isAuthenticatedAdmin, expressAsyncHandler(optionsAController.addCategory))
-    .get("/getCategory", isAuthenticatedAdmin, expressAsyncHandler(optionsAController.getAllCategoryList))
+    .get("/getCategory", expressAsyncHandler(optionsAController.getAllCategoryList))
     .get("/getCategoryDetails/:categoryId", isAuthenticatedAdmin, expressAsyncHandler(optionsAController.getCategoryDetails))
     .post("/updateCategory", isAuthenticatedAdmin, expressAsyncHandler(optionsAController.updateCategory))
     .post("/deleteCategory/:categoryId", isAuthenticatedAdmin, expressAsyncHandler(optionsAController.deleteCategory))
@@ -36,9 +36,7 @@ routes
 
     // cake
     .post("/addCake", isAuthenticatedAdmin, expressAsyncHandler(cakeAController.addCake))
-    .get("/getCakeList", isAuthenticatedAdmin, expressAsyncHandler(cakeAController.getAllCake))
-    .get("/getSingleCake/:cakeId", isAuthenticatedAdmin, expressAsyncHandler(cakeAController.getSingleCake))
-
+    .get("/getCake", isAuthenticatedAdmin, expressAsyncHandler(cakeAController.getCake))
 
 
 module.exports = routes

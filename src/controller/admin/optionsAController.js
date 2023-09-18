@@ -59,7 +59,13 @@ const addCategory = async (req, res) => {
 
 // get all category
 const getAllCategoryList = async (req, res) => {
-    const data = await Category.find({ isDeleted: 0 }).select('name image isActive')
+    const path = req.baseUrl
+    let data = []
+    if (path.includes("users")) {
+        data = await Category.find({ isDeleted: 0, isActive: 1 }).select('name image isActive')
+    } else {
+        data = await Category.find({ isDeleted: 0 }).select('name image isActive')
+    }
     data.map((category) => {
         return category.image = `${PATH_END_POINT.categoryImage}${category.image}`
     })

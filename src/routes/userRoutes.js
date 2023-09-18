@@ -3,7 +3,7 @@ const expressAsyncHandler = require("express-async-handler")
 const validator = require("../helper/validator.helper")
 const { registration, login, verifyOTP, resetPassword, changePassword, addAddress } = require("../common/validation")
 const { isAuthenticatedUser } = require("../common/middleware/authenticate.middleware")
-const { userAuthController, userProfileController } = require("../controller/index")
+const { userAuthController, userProfileController, optionsAController, cakeUController } = require("../controller/index")
 
 
 routes
@@ -24,5 +24,10 @@ routes
     .put("/updateAddress/:addressId", isAuthenticatedUser, expressAsyncHandler(userProfileController.updateAddress))
     .delete("/deleteAddress/:addressId", isAuthenticatedUser, expressAsyncHandler(userProfileController.deleteAddress))
 
+    // category
+    .get("/getCategory", expressAsyncHandler(optionsAController.getAllCategoryList))
+
+    // cake
+    .get("/getCakeList", expressAsyncHandler(cakeUController.getCakeList))
 
 module.exports = routes

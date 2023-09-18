@@ -25,7 +25,7 @@ const cakeSchema = mongoose.Schema({
             ref: "Variant",
             required: [true, "VariantId is Required"]
         },
-        price: {
+        variantPrice: {
             type: Number,
             required: [true, "Price is Required"]
         }
