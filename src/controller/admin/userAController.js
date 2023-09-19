@@ -71,12 +71,27 @@ const addUser = async (req, res) => {
 
 // get all users
 const getUserList = async (req, res) => {
-    const data = await User.find({ isDeleted: 0 }).select('firstName lastName email phoneNumber image isActive')
+    let { limit, offset, search } = req.query
+    const limitData = parseInt(limit, 10) || 10;
+    const offsetData = parseInt(offset, 10) || 0;
+    const query = { isDeleted: 0 }
+    if (search) {
+        query.$or = [
+            { firstName: { $regex: search, $options: 'i' } },
+            { lastName: { $regex: search, $options: 'i' } },
+            { email: { $regex: search, $options: 'i' } },
+            { phoneNumber: { $regex: search, $options: 'i' } },
+        ];
+    }
+
+    let data = await User.find(query).select('firstName lastName email phoneNumber image isActive')
 
     data.map((user) => {
         return user.image = `${PATH_END_POINT.userProfileImage}${user.image}`
     })
-    return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "User details load successfully", data });
+    const count = data.length
+    data = data.slice(offsetData, limitData + offsetData);
+    return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "User details load successfully", data: { count, data } });
 }
 
 const getSingleUser = async (req, res) => {

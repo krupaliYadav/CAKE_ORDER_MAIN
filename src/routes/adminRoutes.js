@@ -37,6 +37,10 @@ routes
     // cake
     .post("/addCake", isAuthenticatedAdmin, expressAsyncHandler(cakeAController.addCake))
     .get("/getCake", isAuthenticatedAdmin, expressAsyncHandler(cakeAController.getCake))
+    .post("/updateCake/:cakeId", isAuthenticatedAdmin, expressAsyncHandler(cakeAController.updateCake))
+    .post("/deleteSingleImg", isAuthenticatedAdmin, expressAsyncHandler(cakeAController.deleteSingleCakeImg))
+    .post("/deleteCake/:cakeId", isAuthenticatedAdmin, expressAsyncHandler(cakeAController.deleteCake))
+    .post("/cakeStatus", isAuthenticatedAdmin, expressAsyncHandler(cakeAController.cakeStatus))
 
 
 module.exports = routes

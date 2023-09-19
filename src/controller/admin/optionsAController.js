@@ -1,4 +1,5 @@
 const Category = require("../../models/category")
+const Cake = require("../../models/cake")
 const Variant = require("../../models/variant")
 const formidable = require("formidable")
 const { HTTP_STATUS_CODE, PATH_END_POINT } = require("../../helper/constants.helper")
@@ -60,16 +61,29 @@ const addCategory = async (req, res) => {
 // get all category
 const getAllCategoryList = async (req, res) => {
     const path = req.baseUrl
+    let { limit, offset, search } = req.query
+    const limitData = parseInt(limit, 10) || 10;
+    const offsetData = parseInt(offset, 10) || 0;
+
     let data = []
+    let query = { isDeleted: 0 }
+    if (search) {
+        query.name = { $regex: search, $options: 'i' }
+    }
+
     if (path.includes("users")) {
-        data = await Category.find({ isDeleted: 0, isActive: 1 }).select('name image isActive')
+        query = { ...query, isActive: 1 }
+        data = await Category.find(query).select('name image isActive')
     } else {
-        data = await Category.find({ isDeleted: 0 }).select('name image isActive')
+        data = await Category.find(query).select('name image isActive')
     }
     data.map((category) => {
         return category.image = `${PATH_END_POINT.categoryImage}${category.image}`
     })
-    return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "Category list load successfully", data })
+
+    const count = data.length;
+    data = data.slice(offsetData, limitData + offsetData);
+    return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "Category list load successfully", data: { count, data } })
 }
 
 // get single category
@@ -170,6 +184,11 @@ const deleteCategory = async (req, res) => {
     if (!category) {
         throw new BadRequestException("Category not found")
     }
+
+    const filter = { categoryId: categoryId };
+    const update = { $set: { isDeleted: 1 } };
+    await Cake.updateMany(filter, update);
+
     return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "Category delete successfully" });
 }
 
@@ -207,9 +226,21 @@ const addVariant = async (req, res) => {
 
 // get all variant
 const getAllVariantList = async (req, res) => {
-    const data = await Variant.find({ isDeleted: 0 }).select('name  isActive')
+    let { limit, offset, search } = req.query
+    const limitData = parseInt(limit, 10) || 10;
+    const offsetData = parseInt(offset, 10) || 0;
 
-    return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "Variant list load successfully", data })
+    let query = { isDeleted: 0 }
+    if (search) {
+        query.name = { $regex: search, $options: 'i' }
+    }
+
+    let data = await Variant.find(query).select('name  isActive')
+
+    let count = data.length
+    data = data.slice(offsetData, limitData + offsetData);
+
+    return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "Variant list load successfully", data: { count, data } })
 }
 
 // get single variant
