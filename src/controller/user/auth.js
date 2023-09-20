@@ -37,14 +37,15 @@ const register = async (req, res) => {
 const login = async (req, res) => {
     let { email, password, deviceToken, firebaseToken } = req.body
 
-    const isActiveUser = await User.findOne({ email: email, isActive: 1 })
-    if (!isActiveUser) {
-        throw new BadRequestException("Access denied")
-    }
     const user = await User.findOne({ email: email })
 
     if (!user || !bcrypt.compareSync(password, user?.password)) {
         throw new BadRequestException("Invalid email or password")
+    }
+
+    const isActiveUser = await User.findOne({ email: email, isActive: 1 })
+    if (!isActiveUser) {
+        throw new BadRequestException("Access denied")
     }
 
     if (deviceToken && firebaseToken) {

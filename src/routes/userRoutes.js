@@ -3,7 +3,7 @@ const expressAsyncHandler = require("express-async-handler")
 const validator = require("../helper/validator.helper")
 const { registration, login, verifyOTP, resetPassword, changePassword, addAddress } = require("../common/validation")
 const { isAuthenticatedUser } = require("../common/middleware/authenticate.middleware")
-const { userAuthController, userProfileController, optionsAController, cakeUController } = require("../controller/index")
+const { userAuthController, userProfileController, optionsAController, cakeUController, orderUController } = require("../controller/index")
 
 
 routes
@@ -29,5 +29,10 @@ routes
 
     // cake
     .get("/getCakeList", expressAsyncHandler(cakeUController.getCakeList))
+
+    // order
+    .post("/placeOrder", isAuthenticatedUser, expressAsyncHandler(orderUController.placeOrder))
+
+
 
 module.exports = routes

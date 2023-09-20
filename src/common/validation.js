@@ -100,6 +100,10 @@ const addUserValidation = [
 const addCakeValidation = [
     'name', 'price', 'description', 'categoryId', 'variant'
 ]
+
+const placeOrderValidation = [
+    'cakeId', 'variantId', 'addressId', 'orderType'
+]
 module.exports = {
     registration,
     login,
@@ -109,5 +113,6 @@ module.exports = {
     addAddress,
     adminLogin,
     addUserValidation,
-    addCakeValidation
+    addCakeValidation,
+    placeOrderValidation
 }

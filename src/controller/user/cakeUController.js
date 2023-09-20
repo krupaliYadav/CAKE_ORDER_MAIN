@@ -1,11 +1,11 @@
 const Cake = require("../../models/cake")
+const Category = require("../../models/category")
 const mongoose = require("mongoose")
 const { HTTP_STATUS_CODE, PATH_END_POINT } = require("../../helper/constants.helper")
 const { BadRequestException, ConflictRequestException, NotFoundRequestException } = require("../../common/exceptions/index")
 
 const getCakeList = async (req, res) => {
     const { cakeId, limit, offset, categoryId, isPopular, isCustom } = req.query
-    console.log(isPopular);
     const limitData = parseInt(limit, 10) || 10;
     const offsetData = parseInt(offset, 10) || 0;
 
@@ -17,6 +17,10 @@ const getCakeList = async (req, res) => {
 
     if (categoryId) {
         if (!mongoose.Types.ObjectId.isValid(categoryId)) throw new BadRequestException("category Id is not valid");
+        const isCategoryExits = await Category.findOne({ _id: categoryId, isDeleted: 0, isActive: 1 })
+        if (!isCategoryExits) {
+            throw new BadRequestException('Category Type dose not exits..!')
+        }
         query = { ...query, categoryId: new mongoose.Types.ObjectId(categoryId) }
     }
 

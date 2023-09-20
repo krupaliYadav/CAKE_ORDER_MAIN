@@ -89,9 +89,11 @@ const getUserList = async (req, res) => {
     data.map((user) => {
         return user.image = `${PATH_END_POINT.userProfileImage}${user.image}`
     })
-    const count = data.length
+
+    let totalCount = await User.countDocuments({ isDeleted: 0 })
+    let filterCount = data.length
     data = data.slice(offsetData, limitData + offsetData);
-    return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "User details load successfully", data: { count, data } });
+    return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "User details load successfully", data: { totalCount, filterCount, data } });
 }
 
 const getSingleUser = async (req, res) => {

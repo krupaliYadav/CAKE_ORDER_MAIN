@@ -65,6 +65,7 @@ const getAllCategoryList = async (req, res) => {
     const limitData = parseInt(limit, 10) || 10;
     const offsetData = parseInt(offset, 10) || 0;
 
+    let totalCount;
     let data = []
     let query = { isDeleted: 0 }
     if (search) {
@@ -74,16 +75,18 @@ const getAllCategoryList = async (req, res) => {
     if (path.includes("users")) {
         query = { ...query, isActive: 1 }
         data = await Category.find(query).select('name image isActive')
+        totalCount = await Category.countDocuments({ isDeleted: 0, isActive: 1 })
     } else {
         data = await Category.find(query).select('name image isActive')
+        totalCount = await Category.countDocuments({ isDeleted: 0 })
     }
     data.map((category) => {
         return category.image = `${PATH_END_POINT.categoryImage}${category.image}`
     })
 
-    const count = data.length;
+    const filterCount = data.length;
     data = data.slice(offsetData, limitData + offsetData);
-    return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "Category list load successfully", data: { count, data } })
+    return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "Category list load successfully", data: { totalCount, filterCount, data } })
 }
 
 // get single category
@@ -237,10 +240,11 @@ const getAllVariantList = async (req, res) => {
 
     let data = await Variant.find(query).select('name  isActive')
 
-    let count = data.length
+    let totalCount = await Variant.countDocuments({ isDeleted: 0 })
+    let filterCount = data.length
     data = data.slice(offsetData, limitData + offsetData);
 
-    return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "Variant list load successfully", data: { count, data } })
+    return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "Variant list load successfully", data: { totalCount, filterCount, data } })
 }
 
 // get single variant

@@ -28,12 +28,13 @@ const addCake = async (req, res) => {
             }
             // check category exits or not
             const isCategoryExits = await Category.findOne({ _id: categoryId, isDeleted: 0, isActive: 1 })
+
             if (!isCategoryExits) {
                 return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({ status: HTTP_STATUS_CODE.BAD_REQUEST, success: false, message: 'Category Type dose not exits..!' })
             }
-
             if (variant) {
-                for (const val of variant) {
+                const variantObjects = variant.map(val => JSON.parse(val));
+                for (const val of variantObjects) {
                     if (!mongoose.Types.ObjectId.isValid(val.variantId)) {
                         return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({ status: HTTP_STATUS_CODE.BAD_REQUEST, success: false, message: "variant Id is not valid" });
                     } else {
@@ -43,6 +44,7 @@ const addCake = async (req, res) => {
                         }
                     }
                 }
+                fields.variant = variantObjects
             }
             const newCake = new Cake(fields)
             if (files.image) {
@@ -52,7 +54,7 @@ const addCake = async (req, res) => {
                     const imgName = newImg.originalFilename.split(".");
                     const extension = imgName[imgName.length - 1];
                     if (extension !== "jpeg" && extension !== "png" && extension !== "jpg") {
-                        return res.status(HTTP_STATUS_CODE.ERROR).json({ status: HTTP_STATUS_CODE.ERROR, success: false, message: req.t("ImageExtension", { extension: extension }) });
+                        return res.status(HTTP_STATUS_CODE.INTERNAL_SERVER).json({ status: HTTP_STATUS_CODE.INTERNAL_SERVER, success: false, message: `${extension} is not allowed.` });
                     }
                     const fileName = uuidv4() + "." + extension;
                     const newPath = path.resolve(__dirname, "../../" + `/public/cake/${fileName}`);
@@ -167,10 +169,11 @@ const getCake = async (req, res) => {
         })
     }
 
-    const count = data.length;
+    const totalCount = await Cake.countDocuments({ isDeleted: 0 })
+    const filterCount = data.length;
     data = data.slice(offsetData, limitData + offsetData);
 
-    return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "Cake details load successfully", data: { count, data } });
+    return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "Cake details load successfully", data: { totalCount, filterCount, data } });
 }
 
 const updateCake = async (req, res) => {
@@ -198,7 +201,7 @@ const updateCake = async (req, res) => {
                     if (!mongoose.Types.ObjectId.isValid(val.variantId)) {
                         return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({ status: HTTP_STATUS_CODE.BAD_REQUEST, success: false, message: "variant Id is not valid" });
                     } else {
-                        const isVariantExists = await Variant.findOne({ _id: val.variantId });
+                        const isVariantExists = await Variant.findOne({ _id: val.variantId, isDeleted: 0, isActive: 1 });
                         if (!isVariantExists) {
                             return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({ status: HTTP_STATUS_CODE.BAD_REQUEST, success: false, message: "Cake variantId dose not exits" });
                         }
@@ -212,7 +215,7 @@ const updateCake = async (req, res) => {
                     const imgName = newImg.originalFilename.split(".");
                     const extension = imgName[imgName.length - 1];
                     if (extension !== "jpeg" && extension !== "png" && extension !== "jpg") {
-                        return res.status(HTTP_STATUS_CODE.ERROR).json({ status: HTTP_STATUS_CODE.ERROR, success: false, message: req.t("ImageExtension", { extension: extension }) });
+                        return res.status(HTTP_STATUS_CODE.INTERNAL_SERVER).json({ status: HTTP_STATUS_CODE.INTERNAL_SERVER, success: false, message: `${extension} is not allowed.` });
                     }
                     const fileName = uuidv4() + "." + extension;
                     const newPath = path.resolve(__dirname, "../../" + `/public/cake/${fileName}`);

@@ -20,4 +20,6 @@ const PATH_END_POINT = {
     cakeImage: "http://103.177.225.86:4000/public/cake/",
 }
 
-module.exports = { HTTP_STATUS_CODE, DEFAULT_PROFILE_IMG, PATH_END_POINT }
+const ORDER_ID = "#-"
+
+module.exports = { HTTP_STATUS_CODE, DEFAULT_PROFILE_IMG, PATH_END_POINT, ORDER_ID }
