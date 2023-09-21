@@ -173,7 +173,8 @@ const getMyAllOrders = async (req, res) => {
                 foreignField: "cakeId",
                 as: 'reviews',
                 pipeline: [
-                    { $project: { review: 1 } },
+                    { $match: { isDeleted: 0 } },
+                    { $project: { rating: 1 } },
 
                 ],
             }
@@ -194,7 +195,7 @@ const getMyAllOrders = async (req, res) => {
         {
             $project: {
                 _id: 1,
-                reviews: 1,
+                rating: { $ifNull: [{ $first: "$reviews.rating" }, null] },
                 nameOnCake: { $ifNull: ["$nameOnCake", null] },
                 orderDateTime: { $ifNull: ["$dateTime", null] },
                 orderStatus: "$status",
