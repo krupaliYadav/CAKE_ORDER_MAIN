@@ -26,4 +26,6 @@ async function fcmNotification({ message, deviceIds }) {
         });
     });
 }
+
+
 module.exports = { fcmNotification };

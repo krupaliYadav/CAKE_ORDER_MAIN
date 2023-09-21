@@ -2,6 +2,7 @@ const formidable = require("formidable")
 const fs = require("fs");
 const { v4: uuidv4 } = require('uuid');
 const User = require("../../models/userModel")
+const Order = require("../../models/order")
 const Address = require("../../models/address")
 const { HTTP_STATUS_CODE, DEFAULT_PROFILE_IMG, PATH_END_POINT } = require("../../helper/constants.helper")
 const { BadRequestException } = require("../../common/exceptions/index");
@@ -19,8 +20,9 @@ const getProfile = async (req, res) => {
     if (data?.image) {
         data.image = `${PATH_END_POINT.userProfileImage}${data.image}`
     }
+    const totalNumOfOrders = await Order.countDocuments({ userId: userId })
 
-    return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "User details load successfully", data })
+    return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "User details load successfully", data: { data, totalNumOfOrders } })
 }
 
 // update user profile

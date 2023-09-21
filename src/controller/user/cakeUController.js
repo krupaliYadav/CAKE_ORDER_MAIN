@@ -1,12 +1,14 @@
 const Cake = require("../../models/cake")
 const Category = require("../../models/category")
+const Review = require("../../models/review")
+const Order = require("../../models/order")
 const mongoose = require("mongoose")
 const { HTTP_STATUS_CODE, PATH_END_POINT } = require("../../helper/constants.helper")
 const { BadRequestException, ConflictRequestException, NotFoundRequestException } = require("../../common/exceptions/index")
 
 const getCakeList = async (req, res) => {
     const { cakeId, limit, offset, categoryId, isPopular, isCustom } = req.query
-    const limitData = parseInt(limit, 10) || 10;
+    const limitData = parseInt(limit, 10) || 25;
     const offsetData = parseInt(offset, 10) || 0;
 
     let query = { isDeleted: 0, isActive: 1 }
@@ -70,7 +72,9 @@ const getCakeList = async (req, res) => {
                 isCustom: 1,
                 isActive: 1,
                 variant: 1,
-                variantData: 1
+                variantData: 1,
+                noOfReviews: { $ifNull: ["$noOfReviews", null] },
+                rating: { $ifNull: ["$rating", null] }
             }
         }
     ]);
@@ -101,7 +105,30 @@ const getCakeList = async (req, res) => {
     return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "Cake details load successfully", data: { count, data } });
 }
 
+
+const addRatingAndReview = async (req, res) => {
+    const userId = req.user
+    const { cakeId, rating, review } = req.body;
+    if (!mongoose.Types.ObjectId.isValid(cakeId)) throw new BadRequestException("Please enter valid cake id")
+
+    const isCake = await Cake.findOne({ _id: cakeId });
+    if (isCake) {
+        await Review.create({
+            userId: userId,
+            cakeId: cakeId,
+            rating: rating,
+            review: review
+        });
+        // update review status in order table
+        await Order.updateMany({ userId: userId, cakeId: cakeId }, { $set: { isReviewed: true } })
+        return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "Save successfully" });
+    } else {
+        throw new BadRequestException("Cake details not found");
+    }
+}
+
 module.exports = {
     getCakeList,
+    addRatingAndReview
 }
 

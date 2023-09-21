@@ -1,9 +1,9 @@
 const routes = require("express").Router()
 const expressAsyncHandler = require("express-async-handler")
 const validator = require("../helper/validator.helper")
-const { registration, login, verifyOTP, resetPassword, changePassword, addAddress } = require("../common/validation")
+const { registration, login, verifyOTP, resetPassword, changePassword, addAddress, addReviewValidation } = require("../common/validation")
 const { isAuthenticatedUser } = require("../common/middleware/authenticate.middleware")
-const { userAuthController, userProfileController, optionsAController, cakeUController, orderUController } = require("../controller/index")
+const { userAuthController, userProfileController, optionsAController, cakeUController, orderUController, sliderUController } = require("../controller/index")
 
 
 routes
@@ -30,9 +30,15 @@ routes
     // cake
     .get("/getCakeList", expressAsyncHandler(cakeUController.getCakeList))
 
+    // cake review
+    .post("/addRatingAndReview", isAuthenticatedUser, validator.body(addReviewValidation), expressAsyncHandler(cakeUController.addRatingAndReview))
+
     // order
     .post("/placeOrder", isAuthenticatedUser, expressAsyncHandler(orderUController.placeOrder))
     .get("/getMyOrders", isAuthenticatedUser, expressAsyncHandler(orderUController.getMyAllOrders))
+
+    // sliders
+    .get("/getAllSliders", expressAsyncHandler(sliderUController.getAllSliders))
 
 
 

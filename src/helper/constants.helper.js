@@ -19,8 +19,33 @@ const PATH_END_POINT = {
     categoryImage: "http://103.177.225.86:4000/public/category/",
     cakeImage: "http://103.177.225.86:4000/public/cake/",
     customCakeImg: "http://103.177.225.86:4000/public/customCake/",
+    sliderImg: "http://103.177.225.86:4000/public/sliderImg/",
 }
 
 const ORDER_ID = "#-"
 
-module.exports = { HTTP_STATUS_CODE, DEFAULT_PROFILE_IMG, PATH_END_POINT, ORDER_ID }
+const notificationMSGs = {
+    newCategoryAdded(categoryName) {
+        return {
+            title: 'New Category added',
+            message: `Yay! New category added: ${categoryName}.`,
+            content: 'Category added'
+        }
+    },
+    orderPlace(cakeName) {
+        return {
+            title: 'Order Placed',
+            message: `Your order is booked for ${cakeName}`,
+            content: 'ORDER_BOOKED'
+        }
+    },
+    orderStatusUpdate(data) {
+        return {
+            title: 'Status Updates',
+            message: `The status of your ${data.cakeName} cake has been updated! ${data.status}`,
+            content: 'STATUS_UPDATE'
+        }
+    }
+}
+
+module.exports = { HTTP_STATUS_CODE, DEFAULT_PROFILE_IMG, PATH_END_POINT, ORDER_ID, notificationMSGs }

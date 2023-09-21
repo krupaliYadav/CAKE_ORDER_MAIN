@@ -53,7 +53,7 @@ const verifyOTP = Joi.object().keys({
 
 const resetPassword = Joi.object().keys({
     userId: Joi.string().required().messages({
-        "number.empty": "UserId is required"
+        "string.empty": "UserId is required"
     }),
     password: Joi.string().required().messages({
         "string.empty": "The password field is required.",
@@ -104,6 +104,18 @@ const addCakeValidation = [
 const placeOrderValidation = [
     'cakeId', 'variantId', 'addressId', 'orderType'
 ]
+
+const addReviewValidation = Joi.object().keys({
+    cakeId: Joi.string().required().messages({
+        "string.empty": "cakeId is required"
+    }),
+    rating: Joi.number().required().messages({
+        "number.empty": "The rating field is required.",
+    }),
+    review: Joi.string().required().messages({
+        "string.empty": "The review field is required.",
+    }),
+})
 module.exports = {
     registration,
     login,
@@ -114,5 +126,6 @@ module.exports = {
     adminLogin,
     addUserValidation,
     addCakeValidation,
-    placeOrderValidation
+    placeOrderValidation,
+    addReviewValidation
 }

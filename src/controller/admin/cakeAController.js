@@ -114,7 +114,7 @@ const getCake = async (req, res) => {
                 foreignField: "_id",
                 as: 'category',
                 pipeline: [
-                    { $project: { name: 1, isActive: 1, _id: 0 } }
+                    { $project: { name: 1, isActive: 1, _id: 1 } }
                 ]
             }
         },

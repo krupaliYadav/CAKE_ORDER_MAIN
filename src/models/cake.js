@@ -53,7 +53,12 @@ const cakeSchema = mongoose.Schema({
         type: Number,
         default: 0,
         comment: '0 = notDeleted, 1= deleted'
-    }
+    },
+    rating: {
+        type: Number,
+        default: 0,
+    },
+    noOfReviews: { type: Number }
 }, { timestamps: true })
 
 module.exports = mongoose.model("Cake", cakeSchema);

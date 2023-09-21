@@ -125,12 +125,12 @@ const getOrderList = async (req, res) => {
                     nameOnCake: { $ifNull: ["$nameOnCake", null] },
                     orderDateTime: { $ifNull: ["$dateTime", null] },
                     orderStatus: "$status",
-                    orderType: 1,
-                    orderId: 1,
+                    orderType: "$orderType",
+                    orderId: "$orderId",
                     note: { $ifNull: ["$note", null] },
                     altPhoneNumber: { $cond: [{ $ne: ["$altPhoneNumber", ""] }, "$altPhoneNumber", null] },
-                    isReviewed: 1,
-                    isCustom: 1,
+                    isReviewed: "$isReviewed",
+                    isCustom: "$isCustom",
                     customImage: { $ifNull: ["$image", null] },
                 }
             }

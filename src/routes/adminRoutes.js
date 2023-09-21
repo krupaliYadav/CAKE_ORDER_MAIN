@@ -3,7 +3,7 @@ const expressAsyncHandler = require("express-async-handler")
 const validator = require("../helper/validator.helper")
 const { adminLogin } = require("../common/validation")
 const { isAuthenticatedAdmin } = require("../common/middleware/authenticate.middleware")
-const { adminAuthController, userAController, optionsAController, cakeAController, orderAController, dashBoardAController } = require("../controller/index")
+const { adminAuthController, userAController, optionsAController, cakeAController, orderAController, dashBoardAController, sliderAController } = require("../controller/index")
 
 
 routes
@@ -48,5 +48,13 @@ routes
 
     // dashboard
     .get("/dashBoardCount", isAuthenticatedAdmin, expressAsyncHandler(dashBoardAController.dashBoardCount))
+
+    // slider 
+    .post("/addSliderImg", isAuthenticatedAdmin, expressAsyncHandler(sliderAController.addSlider))
+    .get("/getSliderList", isAuthenticatedAdmin, expressAsyncHandler(sliderAController.getSliders))
+    .get("/getSingleSlider/:sliderId", isAuthenticatedAdmin, expressAsyncHandler(sliderAController.getSingleSlider))
+    .post("/deleteSlider/:sliderId", isAuthenticatedAdmin, expressAsyncHandler(sliderAController.deleteSlider))
+    .post("/sliderStatus", isAuthenticatedAdmin, expressAsyncHandler(sliderAController.sliderStatus))
+
 
 module.exports = routes

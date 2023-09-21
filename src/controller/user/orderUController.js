@@ -132,7 +132,7 @@ const getMyAllOrders = async (req, res) => {
                 foreignField: "_id",
                 as: 'cake',
                 pipeline: [
-                    { $project: { name: 1, price: 1, description: 1, image: 1, variant: 1 } },
+                    { $project: { name: 1, price: 1, description: 1, image: 1, variant: 1, noOfReviews: 1, rating: 1 } },
                 ]
             }
         },
@@ -168,6 +168,18 @@ const getMyAllOrders = async (req, res) => {
         },
         {
             $lookup: {
+                from: 'reviews',
+                localField: 'cake._id',
+                foreignField: "cakeId",
+                as: 'reviews',
+                pipeline: [
+                    { $project: { review: 1 } },
+
+                ],
+            }
+        },
+        {
+            $lookup: {
                 from: 'addresses',
                 localField: 'addressId',
                 foreignField: "_id",
@@ -182,6 +194,7 @@ const getMyAllOrders = async (req, res) => {
         {
             $project: {
                 _id: 1,
+                reviews: 1,
                 nameOnCake: { $ifNull: ["$nameOnCake", null] },
                 orderDateTime: { $ifNull: ["$dateTime", null] },
                 orderStatus: "$status",
@@ -192,6 +205,8 @@ const getMyAllOrders = async (req, res) => {
                 cakeName: "$cake.name",
                 cakePrice: "$cake.price",
                 cakeImages: "$cake.image",
+                cakeReviewNumber: { $ifNull: ["$cake.noOfReviews", null] },
+                cakeRatingNum: { $ifNull: ["$cake.rating", null] },
                 cakeDescription: { $ifNull: ["$cake.description", null] },
                 isReviewed: 1,
                 isCustom: 1,
