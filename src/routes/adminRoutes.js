@@ -9,6 +9,7 @@ const { adminAuthController, userAController, optionsAController, cakeAControlle
 routes
     // authentication
     .post("/login", validator.body(adminLogin), expressAsyncHandler(adminAuthController.login))
+    .get("/getProfile", isAuthenticatedAdmin, expressAsyncHandler(adminAuthController.getProfile))
 
     // User
     .post("/addUser", isAuthenticatedAdmin, expressAsyncHandler(userAController.addUser))
