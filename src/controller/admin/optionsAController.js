@@ -202,6 +202,10 @@ const categoryStatus = async (req, res) => {
     if (!categoryId) {
         throw new BadRequestException("categoryId is required")
     }
+
+    if (!mongoose.Types.ObjectId.isValid(categoryId)) {
+        throw new BadRequestException("Please Enter Valid category Id")
+    }
     if (!status) {
         throw new BadRequestException("Status is required")
     }
@@ -296,6 +300,7 @@ const variantStatus = async (req, res) => {
     let { variantId, status } = req.body
 
     if (!variantId) throw new BadRequestException("variantId is required")
+    if (!mongoose.Types.ObjectId.isValid(variantId)) throw new BadRequestException("Please Enter Valid variant Id")
     if (!status) throw new BadRequestException("Status is required")
 
     const variant = await Variant.findByIdAndUpdate({ _id: variantId }, { $set: { isActive: status } })

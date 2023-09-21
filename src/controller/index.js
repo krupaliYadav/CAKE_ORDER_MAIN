@@ -9,3 +9,5 @@ module.exports.adminAuthController = require("./admin/adminAuth");
 module.exports.userAController = require("./admin/userAController");
 module.exports.optionsAController = require("./admin/optionsAController");
 module.exports.cakeAController = require("./admin/cakeAController");
+module.exports.orderAController = require("./admin/orderAController")
+module.exports.dashBoardAController = require("./admin/dashBoard")

@@ -281,6 +281,9 @@ const cakeStatus = async (req, res) => {
     if (!cakeId) {
         throw new BadRequestException("cakeId is required")
     }
+    if (!mongoose.Types.ObjectId.isValid(cakeId)) {
+        throw new BadRequestException("Please Enter Valid cake Id")
+    }
     if (!status) {
         throw new BadRequestException("Status is required")
     }

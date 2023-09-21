@@ -3,7 +3,7 @@ const expressAsyncHandler = require("express-async-handler")
 const validator = require("../helper/validator.helper")
 const { adminLogin } = require("../common/validation")
 const { isAuthenticatedAdmin } = require("../common/middleware/authenticate.middleware")
-const { adminAuthController, userAController, optionsAController, cakeAController } = require("../controller/index")
+const { adminAuthController, userAController, optionsAController, cakeAController, orderAController, dashBoardAController } = require("../controller/index")
 
 
 routes
@@ -42,5 +42,11 @@ routes
     .post("/deleteCake/:cakeId", isAuthenticatedAdmin, expressAsyncHandler(cakeAController.deleteCake))
     .post("/cakeStatus", isAuthenticatedAdmin, expressAsyncHandler(cakeAController.cakeStatus))
 
+    // order
+    .get("/getOrderList", isAuthenticatedAdmin, expressAsyncHandler(orderAController.getOrderList))
+    .post("/changeOrderStatus", isAuthenticatedAdmin, expressAsyncHandler(orderAController.changeOrderStatus))
+
+    // dashboard
+    .get("/dashBoardCount", isAuthenticatedAdmin, expressAsyncHandler(dashBoardAController.dashBoardCount))
 
 module.exports = routes

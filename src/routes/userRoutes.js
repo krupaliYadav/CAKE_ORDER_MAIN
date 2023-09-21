@@ -32,6 +32,7 @@ routes
 
     // order
     .post("/placeOrder", isAuthenticatedUser, expressAsyncHandler(orderUController.placeOrder))
+    .get("/getMyOrders", isAuthenticatedUser, expressAsyncHandler(orderUController.getMyAllOrders))
 
 
 

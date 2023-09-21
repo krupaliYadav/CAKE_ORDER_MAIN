@@ -8,8 +8,6 @@ const fs = require("fs")
 const { HTTP_STATUS_CODE, PATH_END_POINT, ORDER_ID } = require("../../helper/constants.helper")
 const { v4: uuidv4 } = require('uuid');
 const { placeOrderValidation } = require("../../common/validation")
-const { BadRequestException } = require("../../common/exceptions/index")
-
 
 const placeOrder = async (req, res) => {
     const userId = req.user
@@ -104,6 +102,123 @@ const placeOrder = async (req, res) => {
     })
 }
 
+const getMyAllOrders = async (req, res) => {
+    const userId = req.user
+
+    let { orderId } = req.query
+    let query = { isDeleted: 0, userId: new mongoose.Types.ObjectId(userId) }
+    if (orderId) {
+        query = { ...query, _id: new mongoose.Types.ObjectId(orderId) }
+    }
+
+    let data = await Order.aggregate([
+        { $match: query },
+        {
+            $lookup: {
+                from: 'users',
+                localField: 'userId',
+                foreignField: "_id",
+                as: 'user',
+                pipeline: [
+                    { $project: { phoneNumber: 1 } },
+                ]
+            }
+        },
+        { $unwind: "$user" },
+        {
+            $lookup: {
+                from: 'cakes',
+                localField: 'cakeId',
+                foreignField: "_id",
+                as: 'cake',
+                pipeline: [
+                    { $project: { name: 1, price: 1, description: 1, image: 1, variant: 1 } },
+                ]
+            }
+        },
+        { $unwind: "$cake" },
+        {
+            $addFields:
+            {
+                variantDetails: {
+                    $filter: {
+                        input: '$cake.variant',
+                        as: 'cakeVariant',
+                        cond: {
+                            $and: [
+                                { $eq: ['$$cakeVariant.variantId', "$variantId"] },
+                            ]
+                        }
+                    }
+                },
+            },
+        },
+        { $unwind: "$variantDetails" },
+        {
+            $lookup: {
+                from: 'variants',
+                localField: 'variantDetails.variantId',
+                foreignField: "_id",
+                as: 'variantData',
+                pipeline: [
+                    { $project: { name: 1, isActive: 1 } },
+
+                ],
+            }
+        },
+        {
+            $lookup: {
+                from: 'addresses',
+                localField: 'addressId',
+                foreignField: "_id",
+                as: 'address',
+                pipeline: [
+                    { $project: { address: 1 } },
+
+                ],
+            }
+        },
+        { $unwind: "$address" },
+        {
+            $project: {
+                _id: 1,
+                nameOnCake: { $ifNull: ["$nameOnCake", null] },
+                orderDateTime: { $ifNull: ["$dateTime", null] },
+                orderStatus: "$status",
+                orderType: 1,
+                note: { $ifNull: ["$note", null] },
+                phoneNumber: { $cond: [{ $ne: ["$altPhoneNumber", ""] }, "$altPhoneNumber", "$user.phoneNumber"] },
+                cakeId: "$cake._id",
+                cakeName: "$cake.name",
+                cakePrice: "$cake.price",
+                cakeImages: "$cake.image",
+                cakeDescription: { $ifNull: ["$cake.description", null] },
+                isReviewed: 1,
+                isCustom: 1,
+                address: 1,
+                customImage: { $ifNull: ["$image", null] },
+                selectedVariant: {
+                    _id: { $arrayElemAt: ["$variantData._id", 0] },
+                    name: { $arrayElemAt: ["$variantData.name", 0] },
+                    price: "$variantDetails.variantPrice"
+                }
+
+            }
+        }
+    ]);
+    if (data.length !== 0) {
+        data.map((item) => {
+            item.cakeImages = item?.cakeImages.map((imageName) => PATH_END_POINT.cakeImage + imageName);
+            item.customImage = item?.customImage.map((imageName) => PATH_END_POINT.customCakeImg + imageName);
+            return item.cakeImages, item.customImage
+        })
+    }
+
+    return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "Order details load successfully", data: { data } });
+
+}
+
 module.exports = {
-    placeOrder
+    placeOrder,
+    getMyAllOrders
 }

@@ -62,6 +62,12 @@ const orderSchema = mongoose.Schema({
     isReviewed: {
         type: Boolean,
         default: false,
+    },
+    isDeleted: {
+        enum: [0, 1],
+        type: Number,
+        default: 0,
+        comment: '0 = notDeleted, 1= deleted'
     }
 }, { timestamps: true })
 

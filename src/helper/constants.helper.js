@@ -18,6 +18,7 @@ const PATH_END_POINT = {
     userProfileImage: "http://103.177.225.86:4000/public/profile/",
     categoryImage: "http://103.177.225.86:4000/public/category/",
     cakeImage: "http://103.177.225.86:4000/public/cake/",
+    customCakeImg: "http://103.177.225.86:4000/public/customCake/",
 }
 
 const ORDER_ID = "#-"
