@@ -4,6 +4,7 @@ module.exports.userProfileController = require("./user/userProfileController");
 module.exports.cakeUController = require("./user/cakeUController")
 module.exports.orderUController = require("./user/orderUController")
 module.exports.sliderUController = require("./user/sliderUController")
+module.exports.notificationUController = require("./user/notification")
 
 
 // admin

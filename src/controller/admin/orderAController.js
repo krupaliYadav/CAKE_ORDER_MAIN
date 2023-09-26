@@ -1,7 +1,10 @@
 const Order = require("../../models/order")
+const User = require("../../models/userModel")
+const Cake = require("../../models/cake")
 const mongoose = require("mongoose")
-const { HTTP_STATUS_CODE, PATH_END_POINT } = require("../../helper/constants.helper")
-const { BadRequestException, ConflictRequestException } = require("../../common/exceptions/index")
+const { HTTP_STATUS_CODE, PATH_END_POINT, notificationMSGs } = require("../../helper/constants.helper")
+const { BadRequestException } = require("../../common/exceptions/index")
+const { fcmNotification, inAppNotification } = require("../../helper/fcmNotification.helper")
 
 const getOrderList = async (req, res) => {
     let { limit, offset, search, orderId } = req.query
@@ -167,9 +170,29 @@ const changeOrderStatus = async (req, res) => {
     if (![0, 1, 2, 3, 4].includes(status)) {
         throw new BadRequestException('Invalid status value')
     }
-
+    const statusMapping = {
+        0: "Pending",
+        1: "Accepted",
+        2: "Cancelled",
+        3: "InProgress",
+        4: "Completed"
+    };
     const order = await Order.findByIdAndUpdate({ _id: orderId }, { $set: { status: status } })
-
+    // push notification and in app notification
+    const userData = await User.findById({ _id: order.userId })
+    if (order !== null && userData.deviceToken && userData.deviceToken !== null) {
+        const deviceIds = [];
+        if (userData.firebaseToken !== null) {
+            deviceIds.push(userData.firebaseToken);
+        }
+        if (deviceIds.length > 0) {
+            let cakeDetails = await Cake.findById({ _id: order?.cakeId })
+            const statusString = statusMapping[status] || "unknown";
+            let message = notificationMSGs.orderStatusUpdate(cakeDetails.name, statusString)
+            fcmNotification({ message: message, deviceIds });
+            await inAppNotification({ userId: order.userId, orderId: order._id, title: message.title, message: message.message })
+        }
+    }
     if (!order) {
         throw new BadRequestException("Order details not found")
     }

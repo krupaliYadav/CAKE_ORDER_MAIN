@@ -1,11 +1,13 @@
 const Cake = require("../../models/cake")
 const Order = require("../../models/order")
 const Address = require("../../models/address")
+const User = require("../../models/userModel")
 const mongoose = require("mongoose")
 const path = require("path")
 const formidable = require("formidable")
 const fs = require("fs")
-const { HTTP_STATUS_CODE, PATH_END_POINT, ORDER_ID } = require("../../helper/constants.helper")
+const { HTTP_STATUS_CODE, PATH_END_POINT, ORDER_ID, notificationMSGs } = require("../../helper/constants.helper")
+const { fcmNotification, inAppNotification } = require("../../helper/fcmNotification.helper")
 const { v4: uuidv4 } = require('uuid');
 const { placeOrderValidation } = require("../../common/validation")
 
@@ -17,6 +19,7 @@ const placeOrder = async (req, res) => {
             let { cakeId, variantId, orderId, addressId, isCustom, nameOnCake, orderType, image, dateTime, altPhoneNumber, note, status, isReviewed } = fields
             isCustom = isCustom || '0'
 
+            const userData = await User.findById({ _id: userId })
             // validation
             const validation = placeOrderValidation.filter(field => !fields[field]);
             if (validation.length > 0) {
@@ -60,7 +63,7 @@ const placeOrder = async (req, res) => {
                 setData.dateTime = dateTime
             }
 
-            if (orderType === "2" || (isCustom === "1" && orderType === "1") || (isCustom === "1" && orderType === "2")) {
+            if ((isCustom === "1" && orderType === "1") || (isCustom === "1" && orderType === "2")) {
                 if (files.image) {
                     files.image = Array.isArray(files.image) ? files.image : [files.image];
                     const validExtensions = ["jpeg", "jpg", "png"];
@@ -93,7 +96,21 @@ const placeOrder = async (req, res) => {
                 }
             }
 
-            await Order.create(setData)
+            const order = await Order.create(setData)
+            // push notification and in app notification
+            if (order !== null && userData.deviceToken && userData.deviceToken !== null) {
+                const deviceIds = [];
+                if (userData.firebaseToken !== null) {
+                    deviceIds.push(userData.firebaseToken);
+                }
+                if (deviceIds.length > 0) {
+                    let cakeDetails = await Cake.findById({ _id: order?.cakeId })
+                    let message = notificationMSGs.orderPlace(cakeDetails.name)
+                    fcmNotification({ message: message, deviceIds });
+                    await inAppNotification({ userId: userId, orderId: order._id, title: message.title, message: message.message })
+                }
+            }
+
             return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "Order place successfully" });
 
         } catch (error) {

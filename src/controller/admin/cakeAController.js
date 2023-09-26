@@ -33,6 +33,7 @@ const addCake = async (req, res) => {
                 return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({ status: HTTP_STATUS_CODE.BAD_REQUEST, success: false, message: 'Category Type dose not exits..!' })
             }
             if (variant) {
+                variant = Array.isArray(variant) ? variant : [variant]
                 const variantObjects = variant.map(val => JSON.parse(val));
                 for (const val of variantObjects) {
                     if (!mongoose.Types.ObjectId.isValid(val.variantId)) {
@@ -47,8 +48,8 @@ const addCake = async (req, res) => {
                 fields.variant = variantObjects
             }
             const newCake = new Cake(fields)
-            if (files.image) {
 
+            if (files.image) {
                 files.image = Array.isArray(files.image) ? files.image : [files.image];
                 const imgData = await Promise.all(files.image?.map(async newImg => {
                     const imgName = newImg.originalFilename.split(".");
@@ -197,16 +198,19 @@ const updateCake = async (req, res) => {
             }
 
             if (variant) {
-                for (const val of variant) {
+                variant = Array.isArray(variant) ? variant : [variant]
+                const variantObjects = variant.map(val => JSON.parse(val));
+                for (const val of variantObjects) {
                     if (!mongoose.Types.ObjectId.isValid(val.variantId)) {
                         return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({ status: HTTP_STATUS_CODE.BAD_REQUEST, success: false, message: "variant Id is not valid" });
                     } else {
-                        const isVariantExists = await Variant.findOne({ _id: val.variantId, isDeleted: 0, isActive: 1 });
+                        const isVariantExists = await Variant.findOne({ _id: val.variantId });
                         if (!isVariantExists) {
                             return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({ status: HTTP_STATUS_CODE.BAD_REQUEST, success: false, message: "Cake variantId dose not exits" });
                         }
                     }
                 }
+                fields.variant = variantObjects
             }
 
             if (files.image) {

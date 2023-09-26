@@ -6,8 +6,9 @@ const path = require("path")
 const connectDatabase = require("./src/config/dbConnection")
 const routes = require("./src/routes/index")
 const errorHandlerMiddleware = require("./src/common/middleware/error-handler.middleware");
+const bodyParser = require('body-parser');
 
-
+app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use("/api/v1", routes)

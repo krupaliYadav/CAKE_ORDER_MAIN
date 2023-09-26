@@ -39,10 +39,10 @@ const notificationMSGs = {
             content: 'ORDER_BOOKED'
         }
     },
-    orderStatusUpdate(data) {
+    orderStatusUpdate(cakeName, status) {
         return {
             title: 'Status Updates',
-            message: `The status of your ${data.cakeName} cake has been updated! ${data.status}`,
+            message: `The status of your ${cakeName} cake has been updated! ${status}`,
             content: 'STATUS_UPDATE'
         }
     }

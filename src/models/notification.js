@@ -10,17 +10,17 @@ const notificationSchema = mongoose.Schema({
         type: mongoose.Schema.ObjectId,
         ref: "Order",
     },
-    password: {
+    title: {
         type: String,
-        required: [true, "Password  is Required"]
+        required: [true, "Title  is Required"]
     },
-    phoneNumber: {
+    message: {
         type: String,
-        required: [true, "Phone number  is Required"]
+        required: [true, "Message is Required"]
     },
-    address: {
-        type: String,
-        required: [true, "address is required"]
+    isRead: {
+        type: Boolean,
+        default: false
     },
     isDeleted: {
         enum: [0, 1],
@@ -30,4 +30,4 @@ const notificationSchema = mongoose.Schema({
     }
 }, { timestamps: true })
 
-module.exports = mongoose.model("Admin", notificationSchema);
+module.exports = mongoose.model("Notification", notificationSchema);

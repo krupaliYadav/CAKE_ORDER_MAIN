@@ -1,13 +1,16 @@
 const Category = require("../../models/category")
 const Cake = require("../../models/cake")
+const User = require("../../models/userModel")
 const Variant = require("../../models/variant")
+const Notification = require("../../models/notification")
 const formidable = require("formidable")
-const { HTTP_STATUS_CODE, PATH_END_POINT } = require("../../helper/constants.helper")
+const { HTTP_STATUS_CODE, PATH_END_POINT, notificationMSGs } = require("../../helper/constants.helper")
 const { v4: uuidv4 } = require('uuid');
 const fs = require("fs")
 const path = require("path")
 const mongoose = require("mongoose")
 const { BadRequestException, ConflictRequestException } = require("../../common/exceptions/index")
+const { fcmNotification } = require("../../helper/fcmNotification.helper")
 
 // add new category
 const addCategory = async (req, res) => {
@@ -46,6 +49,29 @@ const addCategory = async (req, res) => {
                         return res.status(HTTP_STATUS_CODE.INTERNAL_SERVER).json({ status: HTTP_STATUS_CODE.INTERNAL_SERVER, success: false, message: err.message });
                     }
                 });
+
+                // push notification
+                const deviceIds = [];
+                const data = []
+                const users = await User.find({ isDeleted: 0, isActive: 1 })
+                users.map((user) => {
+                    if (user.deviceToken !== null) {
+                        if (user.firebaseToken !== null) {
+                            deviceIds.push(user.firebaseToken);
+                        }
+                    }
+                    if (deviceIds.length > 0) {
+                        let message = notificationMSGs.newCategoryAdded(name)
+                        fcmNotification({ message: message, deviceIds });
+                        let setData = {
+                            userId: user._id,
+                            title: message.title,
+                            message: message.message
+                        }
+                        data.push(setData)
+                    }
+                })
+                await Notification.insertMany(data)
                 return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "Category added successfully" });
 
             } else {

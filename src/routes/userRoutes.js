@@ -3,7 +3,7 @@ const expressAsyncHandler = require("express-async-handler")
 const validator = require("../helper/validator.helper")
 const { registration, login, verifyOTP, resetPassword, changePassword, addAddress, addReviewValidation } = require("../common/validation")
 const { isAuthenticatedUser } = require("../common/middleware/authenticate.middleware")
-const { userAuthController, userProfileController, optionsAController, cakeUController, orderUController, sliderUController } = require("../controller/index")
+const { userAuthController, userProfileController, optionsAController, cakeUController, orderUController, sliderUController, notificationUController } = require("../controller/index")
 
 
 routes
@@ -39,6 +39,9 @@ routes
 
     // sliders
     .get("/getAllSliders", expressAsyncHandler(sliderUController.getAllSliders))
+
+    // notification
+    .get("/getNotification", isAuthenticatedUser, expressAsyncHandler(notificationUController.getNotification))
 
 
 
