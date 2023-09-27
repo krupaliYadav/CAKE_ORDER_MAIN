@@ -6,6 +6,10 @@ const notificationSchema = mongoose.Schema({
         ref: "User",
         required: [true, "userId is Required"]
     },
+    adminId: {
+        type: mongoose.Schema.ObjectId,
+        ref: "Admin",
+    },
     orderId: {
         type: mongoose.Schema.ObjectId,
         ref: "Order",

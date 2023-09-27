@@ -208,17 +208,17 @@ const deleteCategory = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(categoryId)) {
         throw new BadRequestException("Please enter valid category Id");
     }
-    const category = await Category.findByIdAndUpdate({ _id: categoryId }, { $set: { isDeleted: 1 } })
-
-    if (!category) {
-        throw new BadRequestException("Category not found")
+    const cake = await Cake.findOne({ categoryId: categoryId, isDeleted: 0 })
+    if (cake) {
+        throw new BadRequestException("Category exist in cake")
+    } else {
+        const category = await Category.findByIdAndUpdate({ _id: categoryId }, { $set: { isDeleted: 1 } })
+        if (!category) {
+            throw new BadRequestException("Variant not found")
+        }
+        return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "Category delete successfully" });
     }
 
-    const filter = { categoryId: categoryId };
-    const update = { $set: { isDeleted: 1 } };
-    await Cake.updateMany(filter, update);
-
-    return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "Category delete successfully" });
 }
 
 // active de-active category 
@@ -313,12 +313,16 @@ const deleteVariant = async (req, res) => {
     const { variantId } = req.params
     if (!mongoose.Types.ObjectId.isValid(variantId)) throw new BadRequestException("Please enter valid variant Id");
 
-    const variant = await Variant.findByIdAndUpdate({ _id: variantId }, { $set: { isDeleted: 1 } })
-
-    if (!variant) {
-        throw new BadRequestException("Variant not found")
+    const cake = await Cake.findOne({ 'variant.variantId': variantId, isDeleted: 0 })
+    if (cake) {
+        throw new BadRequestException("Variant exist in cake")
+    } else {
+        const variant = await Variant.findByIdAndUpdate({ _id: variantId }, { $set: { isDeleted: 1 } })
+        if (!variant) {
+            throw new BadRequestException("Variant not found")
+        }
+        return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "Variant delete successfully" });
     }
-    return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "Variant delete successfully" });
 }
 
 // active de-active variant 

@@ -45,6 +45,13 @@ const notificationMSGs = {
             message: `The status of your ${cakeName} cake has been updated! ${status}`,
             content: 'STATUS_UPDATE'
         }
+    },
+    newOrder(cakeName) {
+        return {
+            title: 'New Order',
+            message: `New order received for ${cakeName} cake`,
+            content: 'NEW_ORDER_PLACED'
+        }
     }
 }
 

@@ -82,7 +82,6 @@ const addAddress = Joi.object().keys({
     }),
 })
 
-// admin
 const adminLogin = Joi.object().keys({
     email: Joi.string().required().messages({
         "string.empty": "The email field is required.",
@@ -90,7 +89,9 @@ const adminLogin = Joi.object().keys({
     }),
     password: Joi.string().required().messages({
         "string.empty": "The password field is required.",
-    })
+    }),
+    deviceToken: Joi.string(),
+    firebaseToken: Joi.string(),
 })
 
 const addUserValidation = [

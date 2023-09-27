@@ -2,6 +2,8 @@ const Cake = require("../../models/cake")
 const Order = require("../../models/order")
 const Address = require("../../models/address")
 const User = require("../../models/userModel")
+const Admin = require("../../models/admin")
+const AdminFcmNotification = require("../../models/adminFcmNotification")
 const mongoose = require("mongoose")
 const path = require("path")
 const formidable = require("formidable")
@@ -11,6 +13,11 @@ const { fcmNotification, inAppNotification } = require("../../helper/fcmNotifica
 const { v4: uuidv4 } = require('uuid');
 const { placeOrderValidation } = require("../../common/validation")
 
+/*
+if cake is not custom but schedule => then date time is required
+if cake is custom and schedule => then date time and image is required
+if cake is custom and instants => then image is required
+*/
 const placeOrder = async (req, res) => {
     const userId = req.user
     const form = formidable({ multiples: true });
@@ -97,19 +104,36 @@ const placeOrder = async (req, res) => {
             }
 
             const order = await Order.create(setData)
-            // push notification and in app notification
+            let cakeDetails = await Cake.findById({ _id: order?.cakeId })
+            const admin = await Admin.findOne({})
+            // push notification and in app notification to user
             if (order !== null && userData.deviceToken && userData.deviceToken !== null) {
                 const deviceIds = [];
                 if (userData.firebaseToken !== null) {
                     deviceIds.push(userData.firebaseToken);
                 }
                 if (deviceIds.length > 0) {
-                    let cakeDetails = await Cake.findById({ _id: order?.cakeId })
                     let message = notificationMSGs.orderPlace(cakeDetails.name)
                     fcmNotification({ message: message, deviceIds });
                     await inAppNotification({ userId: userId, orderId: order._id, title: message.title, message: message.message })
                 }
             }
+            // push notification and in app notification to admin
+            const deviceData = await AdminFcmNotification.find({ adminId: admin._id })
+            if (deviceData.length > 0) {
+                const message = notificationMSGs.newOrder(cakeDetails.name)
+                deviceData.map(async (val) => {
+                    if (val.firebaseToken) {
+                        let deviceIds = [];
+                        deviceIds.push(val.firebaseToken);
+                        const notifications = await fcmNotification({ message: message, deviceIds });
+                        await Promise.all([notifications]);
+                    }
+                });
+                await inAppNotification({ userId: userId, adminId: admin._id, orderId: order._id, title: message.title, message: message.message })
+
+            }
+
 
             return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "Order place successfully" });
 
@@ -190,7 +214,7 @@ const getMyAllOrders = async (req, res) => {
                 foreignField: "cakeId",
                 as: 'reviews',
                 pipeline: [
-                    { $match: { isDeleted: 0 } },
+                    { $match: { isDeleted: 0, userId: new mongoose.Types.ObjectId(userId) } },
                     { $project: { rating: 1 } },
 
                 ],
@@ -246,8 +270,8 @@ const getMyAllOrders = async (req, res) => {
             return item.cakeImages, item.customImage
         })
     }
-
-    return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "Order details load successfully", data: { data } });
+    const count = data.length
+    return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "Order details load successfully", data: { count, data } });
 
 }
 

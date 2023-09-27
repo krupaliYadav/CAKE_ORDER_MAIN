@@ -3,13 +3,14 @@ const expressAsyncHandler = require("express-async-handler")
 const validator = require("../helper/validator.helper")
 const { adminLogin } = require("../common/validation")
 const { isAuthenticatedAdmin } = require("../common/middleware/authenticate.middleware")
-const { adminAuthController, userAController, optionsAController, cakeAController, orderAController, dashBoardAController, sliderAController } = require("../controller/index")
+const { adminAuthController, userAController, optionsAController, cakeAController, orderAController, dashBoardAController, sliderAController, notificationAController } = require("../controller/index")
 
 
 routes
     // authentication
     .post("/login", validator.body(adminLogin), expressAsyncHandler(adminAuthController.login))
     .get("/getProfile", isAuthenticatedAdmin, expressAsyncHandler(adminAuthController.getProfile))
+    .post("/logOut", isAuthenticatedAdmin, expressAsyncHandler(adminAuthController.handleLogOut))
 
     // User
     .post("/addUser", isAuthenticatedAdmin, expressAsyncHandler(userAController.addUser))
@@ -56,6 +57,10 @@ routes
     .get("/getSingleSlider/:sliderId", isAuthenticatedAdmin, expressAsyncHandler(sliderAController.getSingleSlider))
     .post("/deleteSlider/:sliderId", isAuthenticatedAdmin, expressAsyncHandler(sliderAController.deleteSlider))
     .post("/sliderStatus", isAuthenticatedAdmin, expressAsyncHandler(sliderAController.sliderStatus))
+
+    // notification
+    .get("/getAdminNotification", isAuthenticatedAdmin, expressAsyncHandler(notificationAController.getAdminNotification))
+
 
 
 module.exports = routes

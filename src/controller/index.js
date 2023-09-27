@@ -15,3 +15,4 @@ module.exports.cakeAController = require("./admin/cakeAController");
 module.exports.orderAController = require("./admin/orderAController")
 module.exports.dashBoardAController = require("./admin/dashBoard")
 module.exports.sliderAController = require("./admin/sliderController")
+module.exports.notificationAController = require("./admin/adminNotification")

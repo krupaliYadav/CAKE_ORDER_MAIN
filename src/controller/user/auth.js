@@ -43,7 +43,7 @@ const login = async (req, res) => {
         throw new BadRequestException("Invalid email or password")
     }
 
-    const isActiveUser = await User.findOne({ email: email, isActive: 1 })
+    const isActiveUser = await User.findOne({ email: email, isActive: 1, isDeleted: 0 })
     if (!isActiveUser) {
         throw new BadRequestException("Access denied")
     }
@@ -75,11 +75,11 @@ const forgotPassword = async (req, res, next) => {
 
     if (user) {
         var digits = '0123456789';
-        let OTP = '';
-        for (let i = 0; i < 4; i++) {
-            OTP += digits[Math.floor(Math.random() * 10)];
-        }
-
+        // let OTP = '';
+        // for (let i = 0; i < 4; i++) {
+        //     OTP += digits[Math.floor(Math.random() * 10)];
+        // }
+        let OTP = 1234
         // send mail
         // await forgotPasswordMail({ OTP, email });
 

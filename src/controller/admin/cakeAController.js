@@ -11,6 +11,10 @@ const { addCakeValidation } = require("../../common/validation")
 const { BadRequestException } = require("../../common/exceptions/index")
 
 // add new user
+/*
+Note:this aip not work from postman bcz the value of variant comes from laravel side in string formate that's why
+     need to use JSON.parse in api
+*/
 const addCake = async (req, res) => {
     const form = formidable({ multiples: true });
     form.parse(req, async (err, fields, files) => {
@@ -34,6 +38,7 @@ const addCake = async (req, res) => {
             }
             if (variant) {
                 variant = Array.isArray(variant) ? variant : [variant]
+                // convert string to json
                 const variantObjects = variant.map(val => JSON.parse(val));
                 for (const val of variantObjects) {
                     if (!mongoose.Types.ObjectId.isValid(val.variantId)) {
@@ -177,6 +182,10 @@ const getCake = async (req, res) => {
     return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "Cake details load successfully", data: { totalCount, filterCount, data } });
 }
 
+/*
+Note:this aip not work from postman bcz the value of variant comes from laravel side in string formate that's why
+     need to use JSON.parse in api
+*/
 const updateCake = async (req, res) => {
     let { cakeId } = req.params
     const form = formidable({ multiples: true });

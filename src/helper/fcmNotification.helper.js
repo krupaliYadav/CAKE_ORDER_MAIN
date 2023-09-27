@@ -29,10 +29,9 @@ async function fcmNotification({ message, deviceIds }) {
     });
 }
 
-async function inAppNotification({ userId, orderId, title, message }) {
+async function inAppNotification({ userId, orderId, title, message, adminId }) {
     try {
-        const sender = "6502ae7b35dcd12f5a2e753e"
-        await Notification.create({ sender, userId, orderId, title, message })
+        await Notification.create({ userId, orderId, title, message, adminId })
     } catch (error) {
         console.log(error);
         return res.status(HTTP_STATUS_CODE.INTERNAL_SERVER).json({ status: HTTP_STATUS_CODE.INTERNAL_SERVER, success: false, message: error.message });
