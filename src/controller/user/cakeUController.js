@@ -8,8 +8,6 @@ const { BadRequestException, ConflictRequestException, NotFoundRequestException 
 
 const getCakeList = async (req, res) => {
     const { cakeId, limit, offset, categoryId, isPopular, isCustom } = req.query
-    const limitData = parseInt(limit, 10) || 25;
-    const offsetData = parseInt(offset, 10) || 0;
 
     let query = { isDeleted: 0, isActive: 1 }
     if (cakeId) {
@@ -100,6 +98,8 @@ const getCakeList = async (req, res) => {
     }
 
     const count = data.length;
+    const limitData = parseInt(limit, 10) || count;
+    const offsetData = parseInt(offset, 10) || 0;
     data = data.slice(offsetData, limitData + offsetData);
 
     return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "Cake details load successfully", data: { count, data } });

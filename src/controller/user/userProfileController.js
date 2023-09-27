@@ -20,7 +20,7 @@ const getProfile = async (req, res) => {
     if (data?.image) {
         data.image = `${PATH_END_POINT.userProfileImage}${data.image}`
     }
-    const totalNumOfOrders = await Order.countDocuments({ userId: userId })
+    const totalNumOfOrders = await Order.countDocuments({ userId: userId, isDeleted: 0 })
 
     return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "User details load successfully", data: { data, totalNumOfOrders } })
 }

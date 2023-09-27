@@ -11,10 +11,17 @@ const orderSchema = mongoose.Schema({
         ref: "Cake",
         required: [true, "CakeId is Required"]
     },
-    variantId: {
-        type: mongoose.Schema.ObjectId,
-        ref: "Variant",
-        required: [true, "VariantId is Required"]
+    variant: {
+        variantId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Variant'
+        },
+        variantName: {
+            type: String
+        },
+        variantPrice: {
+            type: String
+        },
     },
     orderId: {
         type: String,

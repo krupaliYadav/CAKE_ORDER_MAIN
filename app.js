@@ -7,11 +7,11 @@ const connectDatabase = require("./src/config/dbConnection")
 const routes = require("./src/routes/index")
 const errorHandlerMiddleware = require("./src/common/middleware/error-handler.middleware");
 const bodyParser = require('body-parser');
-const morgan = require('morgan')
+// const morgan = require('morgan')
 
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(morgan('dev'))
+// app.use(morgan('dev'))
 app.use(express.json());
 app.use("/api/v1", routes)
 app.use('/public', express.static(path.join(__dirname, 'src', 'public')));

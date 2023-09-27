@@ -1,6 +1,7 @@
 const Cake = require("../../models/cake")
 const Order = require("../../models/order")
 const Address = require("../../models/address")
+const Variant = require("../../models/variant")
 const User = require("../../models/userModel")
 const Admin = require("../../models/admin")
 const AdminFcmNotification = require("../../models/adminFcmNotification")
@@ -25,7 +26,7 @@ const placeOrder = async (req, res) => {
         try {
             let { cakeId, variantId, orderId, addressId, isCustom, nameOnCake, orderType, image, dateTime, altPhoneNumber, note, status, isReviewed } = fields
             isCustom = isCustom || '0'
-
+            let variant = {}
             const userData = await User.findById({ _id: userId })
             // validation
             const validation = placeOrderValidation.filter(field => !fields[field]);
@@ -41,8 +42,21 @@ const placeOrder = async (req, res) => {
             const isCakeExits = await Cake.findOne({ _id: cakeId, isDeleted: 0, isActive: 1 })
             if (!isCakeExits) return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({ status: HTTP_STATUS_CODE.BAD_REQUEST, success: false, message: 'CakeId dose not exits..!' })
 
-            const isVariantExits = await Cake.findOne({ _id: cakeId, variant: { $elemMatch: { variantId: variantId } } })
-            if (!isVariantExits) return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({ status: HTTP_STATUS_CODE.BAD_REQUEST, success: false, message: 'This variant dose not exits in this cake..!' })
+            const isVariantExits = await Cake.findOne({ _id: cakeId, variant: { $elemMatch: { variantId: variantId } } }).select("variant")
+            if (isVariantExits) {
+                isVariantExits.variant.filter((val) => {
+                    if (val.variantId.toString() == variantId) {
+                        variant.variantId = val.variantId,
+                            variant.variantPrice = val.variantPrice
+                    }
+                })
+                const variantDetails = await Variant.findOne({ _id: variant.variantId })
+                if (variantDetails) {
+                    variant.variantName = variantDetails.name
+                }
+            } else {
+                return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({ status: HTTP_STATUS_CODE.BAD_REQUEST, success: false, message: 'This variant dose not exits in this cake..!' })
+            }
 
             const isAddressExits = await Address.findOne({ _id: addressId, userId: userId })
             if (!isAddressExits) return res.status(HTTP_STATUS_CODE.BAD_REQUEST).json({ status: HTTP_STATUS_CODE.BAD_REQUEST, success: false, message: 'This address dose not exits for this user..!' })
@@ -53,7 +67,7 @@ const placeOrder = async (req, res) => {
             let setData = {
                 userId: userId,
                 cakeId: cakeId,
-                variantId: variantId,
+                variant: variant,
                 orderId: orderId,
                 addressId: addressId,
                 isCustom: isCustom || 0,
@@ -104,36 +118,37 @@ const placeOrder = async (req, res) => {
             }
 
             const order = await Order.create(setData)
-            let cakeDetails = await Cake.findById({ _id: order?.cakeId })
-            const admin = await Admin.findOne({})
-            // push notification and in app notification to user
-            if (order !== null && userData.deviceToken && userData.deviceToken !== null) {
-                const deviceIds = [];
-                if (userData.firebaseToken !== null) {
-                    deviceIds.push(userData.firebaseToken);
-                }
-                if (deviceIds.length > 0) {
-                    let message = notificationMSGs.orderPlace(cakeDetails.name)
-                    fcmNotification({ message: message, deviceIds });
-                    await inAppNotification({ userId: userId, orderId: order._id, title: message.title, message: message.message })
-                }
-            }
-            // push notification and in app notification to admin
-            const deviceData = await AdminFcmNotification.find({ adminId: admin._id })
-            if (deviceData.length > 0) {
-                const message = notificationMSGs.newOrder(cakeDetails.name)
-                deviceData.map(async (val) => {
-                    if (val.firebaseToken) {
-                        let deviceIds = [];
-                        deviceIds.push(val.firebaseToken);
-                        const notifications = await fcmNotification({ message: message, deviceIds });
-                        await Promise.all([notifications]);
+            if (order && order !== null) {
+                let cakeDetails = await Cake.findById({ _id: order?.cakeId })
+                const admin = await Admin.findOne({})
+                // push notification and in app notification to user
+                if (userData.deviceToken && userData.deviceToken !== null) {
+                    const deviceIds = [];
+                    if (userData.firebaseToken !== null) {
+                        deviceIds.push(userData.firebaseToken);
                     }
-                });
-                await inAppNotification({ userId: userId, adminId: admin._id, orderId: order._id, title: message.title, message: message.message })
+                    if (deviceIds.length > 0) {
+                        let message = notificationMSGs.orderPlace(cakeDetails.name)
+                        fcmNotification({ message: message, deviceIds });
+                        await inAppNotification({ userId: userId, orderId: order._id, title: message.title, message: message.message })
+                    }
+                }
+                // push notification and in app notification to admin
+                const deviceData = await AdminFcmNotification.find({ adminId: admin._id })
+                if (deviceData.length > 0) {
+                    const message = notificationMSGs.newOrder(cakeDetails.name)
+                    deviceData.map(async (val) => {
+                        if (val.firebaseToken) {
+                            let deviceIds = [];
+                            deviceIds.push(val.firebaseToken);
+                            const notifications = await fcmNotification({ message: message, deviceIds });
+                            await Promise.all([notifications]);
+                        }
+                    });
+                    await inAppNotification({ userId: userId, adminId: admin._id, orderId: order._id, title: message.title, message: message.message })
 
+                }
             }
-
 
             return res.status(HTTP_STATUS_CODE.OK).json({ status: HTTP_STATUS_CODE.OK, success: true, message: "Order place successfully" });
 
@@ -178,35 +193,35 @@ const getMyAllOrders = async (req, res) => {
             }
         },
         { $unwind: "$cake" },
-        {
-            $addFields:
-            {
-                variantDetails: {
-                    $filter: {
-                        input: '$cake.variant',
-                        as: 'cakeVariant',
-                        cond: {
-                            $and: [
-                                { $eq: ['$$cakeVariant.variantId', "$variantId"] },
-                            ]
-                        }
-                    }
-                },
-            },
-        },
-        { $unwind: "$variantDetails" },
-        {
-            $lookup: {
-                from: 'variants',
-                localField: 'variantDetails.variantId',
-                foreignField: "_id",
-                as: 'variantData',
-                pipeline: [
-                    { $project: { name: 1, isActive: 1 } },
+        // {
+        //     $addFields:
+        //     {
+        //         variantDetails: {
+        //             $filter: {
+        //                 input: '$cake.variant',
+        //                 as: 'cakeVariant',
+        //                 cond: {
+        //                     $and: [
+        //                         { $eq: ['$$cakeVariant.variantId', "$variantId"] },
+        //                     ]
+        //                 }
+        //             }
+        //         },
+        //     },
+        // },
+        // { $unwind: "$variantDetails" },
+        // {
+        //     $lookup: {
+        //         from: 'variants',
+        //         localField: 'variantDetails.variantId',
+        //         foreignField: "_id",
+        //         as: 'variantData',
+        //         pipeline: [
+        //             { $project: { name: 1, isActive: 1 } },
 
-                ],
-            }
-        },
+        //         ],
+        //     }
+        // },
         {
             $lookup: {
                 from: 'reviews',
@@ -254,12 +269,12 @@ const getMyAllOrders = async (req, res) => {
                 isCustom: 1,
                 address: 1,
                 customImage: { $ifNull: ["$image", null] },
-                selectedVariant: {
-                    _id: { $arrayElemAt: ["$variantData._id", 0] },
-                    name: { $arrayElemAt: ["$variantData.name", 0] },
-                    price: "$variantDetails.variantPrice"
-                }
-
+                // selectedVariant: {
+                //     _id: { $arrayElemAt: ["$variantData._id", 0] },
+                //     name: { $arrayElemAt: ["$variantData.name", 0] },
+                //     price: "$variantDetails.variantPrice"
+                // }
+                selectedVariant: "$variant"
             }
         }
     ]);

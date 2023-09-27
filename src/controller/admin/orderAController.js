@@ -57,35 +57,35 @@ const getOrderList = async (req, res) => {
             }
         },
         { $unwind: "$cake" },
-        {
-            $addFields:
-            {
-                variantDetails: {
-                    $filter: {
-                        input: '$cake.variant',
-                        as: 'cakeVariant',
-                        cond: {
-                            $and: [
-                                { $eq: ['$$cakeVariant.variantId', "$variantId"] },
-                            ]
-                        }
-                    }
-                },
-            },
-        },
-        { $unwind: "$variantDetails" },
-        {
-            $lookup: {
-                from: 'variants',
-                localField: 'variantDetails.variantId',
-                foreignField: "_id",
-                as: 'variantData',
-                pipeline: [
-                    { $project: { name: 1, isActive: 1 } },
+        // {
+        //     $addFields:
+        //     {
+        //         variantDetails: {
+        //             $filter: {
+        //                 input: '$cake.variant',
+        //                 as: 'cakeVariant',
+        //                 cond: {
+        //                     $and: [
+        //                         { $eq: ['$$cakeVariant.variantId', "$variantId"] },
+        //                     ]
+        //                 }
+        //             }
+        //         },
+        //     },
+        // },
+        // { $unwind: "$variantDetails" },
+        // {
+        //     $lookup: {
+        //         from: 'variants',
+        //         localField: 'variantDetails.variantId',
+        //         foreignField: "_id",
+        //         as: 'variantData',
+        //         pipeline: [
+        //             { $project: { name: 1, isActive: 1 } },
 
-                ],
-            }
-        },
+        //         ],
+        //     }
+        // },
         {
             $lookup: {
                 from: 'addresses',
@@ -119,11 +119,12 @@ const getOrderList = async (req, res) => {
 
                 },
                 address: 1,
-                selectedVariant: {
-                    _id: { $arrayElemAt: ["$variantData._id", 0] },
-                    name: { $arrayElemAt: ["$variantData.name", 0] },
-                    price: "$variantDetails.variantPrice"
-                },
+                // selectedVariant: {
+                //     _id: { $arrayElemAt: ["$variantData._id", 0] },
+                //     name: { $arrayElemAt: ["$variantData.name", 0] },
+                //     price: "$variantDetails.variantPrice"
+                // },
+                selectedVariant: "$variant",
                 orderDetails: {
                     nameOnCake: { $ifNull: ["$nameOnCake", null] },
                     orderDateTime: { $ifNull: ["$dateTime", null] },
